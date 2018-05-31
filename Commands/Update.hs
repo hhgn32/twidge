@@ -40,7 +40,7 @@ d = debugM "update"
 
 update = simpleCmd "update" "Update your status"
              update_help
-             [Option "r" ["recvmail"] (NoArg ("m", "")) 
+             [Option "r" ["recvmail"] (NoArg ("m", ""))
               "Receive update as body of email on stdin",
               Option "i" ["inreplyto"] (ReqArg (stdRequired "i") "MSGID")
               "Indicate this message is in reply to MSGID"
@@ -63,7 +63,7 @@ update_worker x cp ([("m", "")], []) =
                          m -> case parseMsgId m of
                                 Nothing -> []
                                 Just (m, host, section) ->
-                                    if host == serverHost cp && 
+                                    if host == serverHost cp &&
                                        section `elem` ["lsrecent", "lsarchive",
                                                        "lsreplies"]
                                        then [("in_reply_to_status_id",
@@ -105,14 +105,14 @@ procStatus cp section status =
     do poststatus <- case get cp section "shortenurls" of
                        Right True -> case get cp section "shortenall" of
                                        Right True -> shortenUrls cp status
-                                       _ | length status > 140
+                                       _ | length status > 280
                                                   -> shortenUrls cp status
                                        _          -> return status
                        _          -> return status
-       when (length poststatus > 140)
-                (permFail $ "Your status update was " ++ 
+       when (length poststatus > 280)
+                (permFail $ "Your status update was " ++
                           show (length poststatus) ++
-                          " characters; max length 140")
+                          " characters; max length 280")
        return poststatus
 
 dmsend = simpleCmd "dmsend" "Send direct message"
@@ -139,7 +139,7 @@ shortenUrls cp status =
        else do tiny <- shortURL match
                debugM "update" $ "Got tinyurl: " ++ show tiny
                rest <- shortenUrls cp after
-               return $ 
+               return $
                       before ++ (if (length tiny < length match)
                                     then tiny else match)
                              ++ rest
@@ -169,7 +169,7 @@ mkBitlyURL acc url = do
 chooseShortener _ = return mkTinyURL
 #endif
 
-mkTinyURL url = 
+mkTinyURL url =
     simpleDownload . concat $ "http://is.gd/api.php?longurl=" : map escapeHashes url
     where
       -- NOTE: This technique works with the is.gd "API"
